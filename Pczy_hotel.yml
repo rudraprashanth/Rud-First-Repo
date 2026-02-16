@@ -1,0 +1,58 @@
+hotel-booking-app/
+│
+├── server.js
+├── package.json
+├── models/
+│   ├── Hotel.js
+│   └── Booking.js
+│
+└── public/
+    ├── index.html
+    ├── style.css
+    └── script.js
+
+npm init -y
+npm install express mongoose cors body-parser
+
+
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const bodyParser = require("body-parser");
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+app.use(express.static("public"));
+
+// Connect MongoDB
+mongoose.connect("mongodb://127.0.0.1:27017/hotelBooking", {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+})
+.then(() => console.log("MongoDB Connected"))
+.catch(err => console.log(err));
+
+// Models
+const Hotel = require("./models/Hotel");
+const Booking = require("./models/Booking");
+
+
+// Get All Hotels
+app.get("/hotels", async (req, res) => {
+    const hotels = await Hotel.find();
+    res.json(hotels);
+});
+
+// Add Booking
+app.post("/book", async (req, res) => {
+    try {
+        const booking = new Booking(req.body);
+        await booking.save();
+        res.json({ message: "Booking Successful!" });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.listen(5000, () => console.log("Server running on port 5000"));
